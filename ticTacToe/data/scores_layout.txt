@@ -1,0 +1,11 @@
+Player1:	0,0
+Player2:	0,0
+sector1:	0
+sector2:	0
+sector3:	0
+sector4:	0
+sector5:	0
+sector6:	0
+sector7:	0
+sector8:	0
+sector9:	0

@@ -36,10 +36,16 @@ class Lamp{
     case 2:
     fill(0,255,0);
     break;
+
+    case 3:
+    fill(255,255,0);
+    break;
+    
     }//close switch
     // draw the ellipse as lamp representation
     
     ellipse(x,y,diam,diam);
+   
     fill(255);
     text(ndx,x +5,y);
   

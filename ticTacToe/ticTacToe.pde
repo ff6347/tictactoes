@@ -167,8 +167,8 @@ public void read() {
 //  println("a button event from read: "+theValue);
 //  c = theValue;
   
-  
-//  String lines[] = loadStrings("http://www.the-moron.net/project/tictactoe/test/scores.txt");
+//  String key [] = loadStrings("private.txt")
+//  String lines[] = loadStrings(key[0]);
   String lines[] = loadStrings("scores.txt");
 
 //println("there are " + lines.length + " lines");

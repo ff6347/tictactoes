@@ -41,10 +41,13 @@ sector8:	int 0 (off) ,1 (red),2 (green),3 (yellow)
 sector9:	int 0 (off) ,1 (red),2 (green),3 (yellow)
 
 */
-
+String keys [];
+String ul_url = ""; // the URL for the upload
+String scores_url = "";
 int player = 1;// this is the players turn 
 int gameoveranim = 0;
-  boolean gameover = false;
+boolean gameover = false;
+
 int theWinner = 0;// this is the winner
 
 
@@ -86,6 +89,11 @@ Sector sectors [] = new Sector [9];
 // THE SETUP
 // **************************
 void setup(){
+  
+     keys  = loadStrings("private.txt");
+     ul_url  = keys[1];
+     scores_url = keys[0];
+
   frameRate(30);
   // the font on the lamps
   font = createFont("DejaVuSansMono",12);
@@ -242,12 +250,10 @@ public void controlEvent(ControlEvent theEvent) {
 // it reads in the values from the textfile
 public void read() {
   
-//  String key [] = loadStrings("private.txt")
-//  String lines[] = loadStrings(key[0]);
 
-   scores = loadStrings("scores.txt");
-//   scores = loadStrings("Desktop/scores.txt");
-   
+  
+   scores = loadStrings(scores_url);// this could also be a local file but here it is hidden on a server
+  // scores = loadStrings("scores.txt"); 
   player =  Integer.parseInt(scores[0]);
   ply1Wins = Integer.parseInt(scores[1]);
   ply2Wins = Integer.parseInt(scores[2]);
@@ -275,7 +281,14 @@ public void write() {
   
   }
   // write the results to the textfile
- saveStrings(dataPath("scores.txt"), scores);
+ //saveStrings(dataPath("scores.txt"), scores);
+ 
+ // this is the postToWeb Lib by seltar
+     ByteToWeb bytes = new ByteToWeb(this);
+    String uploadText = join(scores,"\n");
+    bytes.post("test",ul_url,"scores.txt",true,uploadText.getBytes());
+    
+    
 // saveStrings("/Desktop/scores.txt", scores);
  
 

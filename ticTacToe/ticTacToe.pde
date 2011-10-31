@@ -82,6 +82,7 @@ Textlabel textLabel;
 // this is the sectors.
 // its a 3 by 3 Matrix of 4 LEDs each
 Sector sectors [] = new Sector [9];
+String labelStrings[] = new String[6];
 
 
 
@@ -90,6 +91,13 @@ Sector sectors [] = new Sector [9];
 // **************************
 void setup(){
   
+    labelStrings [0] = "Its Player ones turn";
+    labelStrings [1] = "Its Player twos turn";
+    labelStrings [2] = "Could not read from server going to local mode";
+    labelStrings [3] = "Player 1 has won!";
+    labelStrings [4] = "Player 2 has won!";
+    labelStrings [5] = "Welcome";
+
      keys  = loadStrings("private.txt");
      ul_url  = keys[1];
      scores_url = keys[0];
@@ -147,7 +155,7 @@ size(1280,360);
   cP5.addButton("write",0,100,120,80,19);
     cP5.addButton("newgame",0,100,140,80,19);
 
-textLabel = cP5.addTextlabel("label","Its Player ones turn",100,70);
+textLabel = cP5.addTextlabel("label",labelStrings[5],100,70);
   textLabel.setColorValue(0xffcccccc);
 
   for(int i=0;i< 9;i++) {
@@ -180,6 +188,13 @@ textLabel = cP5.addTextlabel("label","Its Player ones turn",100,70);
 
 //sectors[2].setSectorVal(1);
 
+try{
+  read();// this reads the scores from the server
+  }catch(Exception e){
+
+  textLabel.setValue(labelStrings[2]);
+  }
+
 }// close setup
 
 // **************************
@@ -187,6 +202,8 @@ textLabel = cP5.addTextlabel("label","Its Player ones turn",100,70);
 // **************************
 
 void draw(){
+  
+//  println(ply1Wins);
   background(0);
   pushMatrix();
   translate(width/4,height/4);
@@ -201,21 +218,24 @@ void draw(){
 
 
 if(player == 1){
-textLabel.setValue("Its Player ones turn");
+textLabel.setValue(labelStrings[0]);
 }else if (player ==2 ){
-textLabel.setValue("Its Player twos turn");
+textLabel.setValue(labelStrings[1]);
 }
 
 checkSectors();
 
   if(gameover){
-    //int preVal = matrix[gameoveranim].val;
     matrix[gameoveranim].val = 3;
     delay(100);
-    //matrix[gameoveranim].val = preVal;
     gameoveranim++;
     if(gameoveranim > matrix.length-1){
     gameoveranim = 0;
+    if(theWinner ==1){
+    ply1Wins++;
+    }else if(theWinner ==2){
+    ply1Wins++;
+    }
     gameover = false;
     newgame();
     write();
@@ -312,82 +332,101 @@ for(int j = 0; j < matrix.length; j++){
 
 void checkSectors(){
 theWinner = 0;
+String ply1Won = labelStrings[3];
+String ply2Won = labelStrings[4];
+
+
 int secVals [] = new int [sectors.length];
 for (int i = 0; i < secVals.length; i++){
 secVals[i] = sectors[i].secval;
 }
 
-String ply1Won = "player one has won!!!";
+
+
+
 // player 1 chances
 // sec 1, 2,3
-if((secVals[0]  == 1)&&(secVals[1]  == 1)&&(secVals[2]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
 
-}
+testPossibility(secVals,0,1,2,1,ply1Won);
+
+//if((secVals[0]  == 1)&&(secVals[1]  == 1)&&(secVals[2]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//gameover = true;
+//
+//}
 // 456
-if((secVals[3]  == 1)&&(secVals[4]  == 1)&&(secVals[5]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
 
+testPossibility(secVals,3,4,5,1,ply1Won);
 
-}
+//if((secVals[3]  == 1)&&(secVals[4]  == 1)&&(secVals[5]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//
+//gameover = true;
+//}
 // 789
-if((secVals[6]  == 1)&&(secVals[7]  == 1)&&(secVals[8]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
+
+testPossibility(secVals,6,7,8,1,ply1Won);
 
 
-}
+//if((secVals[6]  == 1)&&(secVals[7]  == 1)&&(secVals[8]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//gameover = true;
+//}
+
+
 //147
-if((secVals[0]  == 1)&&(secVals[3]  == 1)&&(secVals[6]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
+testPossibility(secVals,0,3,6,1,ply1Won);
+
+//if((secVals[0]  == 1)&&(secVals[3]  == 1)&&(secVals[6]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//
+//gameover = true;
+//}
 
 
-}
 //258
-if((secVals[1]  == 1)&&(secVals[4]  == 1)&&(secVals[7]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
+testPossibility(secVals,1,4,7,1,ply1Won);
+//if((secVals[1]  == 1)&&(secVals[4]  == 1)&&(secVals[7]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//gameover = true;
+//}
 
 
-}
 //369
-if((secVals[2]  == 1)&&(secVals[5]  == 1)&&(secVals[8]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
+testPossibility(secVals,2,5,8,1,ply1Won);
 
+//if((secVals[2]  == 1)&&(secVals[5]  == 1)&&(secVals[8]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//gameover = true;
+//}
 
-}
 //159
-if((secVals[0]  == 1)&&(secVals[4]  == 1)&&(secVals[8]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
-}
-//753
-if((secVals[6]  == 1)&&(secVals[4]  == 1)&&(secVals[2]  == 1)){
-textLabel.setValue(ply1Won);
-theWinner = 1;
-ply1Wins++;
-gameover = true;
-}
+testPossibility(secVals,0,4,8,1,ply1Won);
 
-String ply2Won = "player two has won!!!";
+//if((secVals[0]  == 1)&&(secVals[4]  == 1)&&(secVals[8]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//gameover = true;
+//}
+
+
+//753
+
+testPossibility(secVals,6,4,2,1,ply1Won);
+
+//if((secVals[6]  == 1)&&(secVals[4]  == 1)&&(secVals[2]  == 1)){
+//textLabel.setValue(ply1Won);
+//theWinner = 1;
+//gameover = true;
+//}
+
+
 // player 1 different ways a player can win
 // it could be
 // 123
@@ -404,7 +443,7 @@ String ply2Won = "player two has won!!!";
 if((secVals[0]  == 2)&&(secVals[1]  == 2)&&(secVals[2]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
+
 gameover = true;
 
 
@@ -413,7 +452,7 @@ gameover = true;
 if((secVals[3]  == 2)&&(secVals[4]  == 2)&&(secVals[5]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
+
 gameover = true;
 
 }
@@ -421,7 +460,7 @@ gameover = true;
 if((secVals[6]  == 2)&&(secVals[7]  == 2)&&(secVals[8]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
+
 gameover = true;
 
 }
@@ -429,7 +468,7 @@ gameover = true;
 if((secVals[0]  == 2)&&(secVals[3]  == 2)&&(secVals[6]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
+
 gameover = true;
 
 }
@@ -437,7 +476,7 @@ gameover = true;
 if((secVals[1]  == 2)&&(secVals[4]  == 2)&&(secVals[7]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
+
 gameover = true;
 
 }
@@ -445,7 +484,7 @@ gameover = true;
 if((secVals[2]  == 2)&&(secVals[5]  == 2)&&(secVals[8]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
+
 gameover = true;
 
 }
@@ -453,7 +492,7 @@ gameover = true;
 if((secVals[0]  == 2)&&(secVals[4]  == 2)&&(secVals[8]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
+
 gameover = true;
 
 }
@@ -461,11 +500,21 @@ gameover = true;
 if((secVals[6]  == 2)&&(secVals[4]  == 2)&&(secVals[2]  == 2)){
 textLabel.setValue(ply2Won);
 theWinner = 2;
-ply2Wins++;
 gameover = true;
 
 }  
  
 }
 
+
+void testPossibility(int secVals[], int a,int b, int c, int ply,String msg){
+
+if((secVals[a]  == ply)&&(secVals[b]  == ply)&&(secVals[c]  == ply)){
+textLabel.setValue(msg);
+theWinner = ply;
+gameover = true;
+}
+
+
+}
 

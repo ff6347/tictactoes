@@ -1,3 +1,4 @@
+
 // ticTacToe
 // this will be controlling some leds and an pontentiometer
 // on a arduino board
@@ -20,7 +21,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/
 
 
-import controlP5.*;
+import controlP5.*; // for the GUI
+import org.seltar.Bytes2Web.*; // for saving on the server
+
 
 /*
 // the scores layout

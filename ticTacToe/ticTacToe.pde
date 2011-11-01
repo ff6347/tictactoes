@@ -44,15 +44,11 @@ sector9:	int 0 (off) ,1 (red),2 (green),3 (yellow)
 String keys [];
 String ul_url = ""; // the URL for the upload
 String scores_url = "";
-int player = 1;// this is the players turn 
+int whosTurn = 1;// this is the players turn 
 int gameoveranim = 0;
-boolean gameover = false;
-
+boolean gameover = false; // the name says all
 int theWinner = 0;// this is the winner
-
-
 int ply1Wins = 0;// how many wins
-
 int ply2Wins = 0;// how many wins
 
 PFont font; // the font for the lamps
@@ -82,15 +78,20 @@ Textlabel textLabel;
 // this is the sectors.
 // its a 3 by 3 Matrix of 4 LEDs each
 Sector sectors [] = new Sector [9];
-String labelStrings[] = new String[6];
 
+String labelStrings[] = new String[6]; // these are some messages
 
 
 // **************************
 // THE SETUP
 // **************************
 void setup(){
+  size(1280,360);
+  smooth();
+  cP5 = new ControlP5(this);
+  background(0);
   
+    // the labels messages  
     labelStrings [0] = "Its Player ones turn";
     labelStrings [1] = "Its Player twos turn";
     labelStrings [2] = "Could not read from server going to local mode";
@@ -98,100 +99,82 @@ void setup(){
     labelStrings [4] = "Player 2 has won!";
     labelStrings [5] = "Welcome";
 
-     keys  = loadStrings("private.txt");
-     ul_url  = keys[1];
-     scores_url = keys[0];
+     keys  = loadStrings("private.txt"); // sry got to keep this private
+     ul_url  = keys[1]; // this is the url for the Upload.php to the server see postToWeb lib by seltar
+     scores_url = keys[0];// this is the url for the scores file
 
-  frameRate(30);
-  // the font on the lamps
+  // the font on the lamps numbers
   font = createFont("DejaVuSansMono",12);
   
   // initalize the Sectors
   for(int i = 0; i < sectors.length; i++){
   sectors[i] = new Sector();
-}
+  }
   
   
-  // now combine the lamps into sectors
-  int ctr = 0;
+// build the lamps on their place 
+int ctr = 0;
   for(int y = 0; y < 256; y +=32 ){
     for(int x = 0; x < 256; x+=32){
     matrix[ctr] = new Lamp(x,y,10,ctr);
-    
-    if((ctr == 9) || (ctr == 10)||(ctr == 17)||(ctr == 18)){
-    sectors[0].addLampToSector(matrix[ctr]);
-    }else if((ctr == 11) || (ctr == 12)||(ctr == 19)||(ctr == 20)){
-    sectors[1].addLampToSector(matrix[ctr]);
-    }else if((ctr == 13) || (ctr == 14)||(ctr == 21)||(ctr == 22)){
-    sectors[2].addLampToSector(matrix[ctr]);
-    }else if((ctr == 25) || (ctr == 26)||(ctr == 33)||(ctr == 34)){
-    sectors[3].addLampToSector(matrix[ctr]);
-    }else if((ctr == 27) || (ctr == 28)||(ctr == 35)||(ctr == 36)){
-    sectors[4].addLampToSector(matrix[ctr]);
-    }else if((ctr == 29) || (ctr == 30)||(ctr == 37)||(ctr == 38)){
-    sectors[5].addLampToSector(matrix[ctr]);
-    }else if((ctr == 41) || (ctr == 42)||(ctr == 49)||(ctr == 50)){
-    sectors[6].addLampToSector(matrix[ctr]);
-    }else if((ctr == 43) || (ctr == 44)||(ctr == 51)||(ctr == 52)){
-    sectors[7].addLampToSector(matrix[ctr]);
-    }else if((ctr == 45) || (ctr == 46)||(ctr == 53)||(ctr == 54)){
-    sectors[8].addLampToSector(matrix[ctr]);
-    }
-    
-    
     ctr++;
     }
   }
   
+  // this combines the inner lamps to 9 different sectors
+    for(int j = 0; j < matrix.length; j++){
+    initSectors(j ,sectors[0],matrix,9, 10, 17, 18);
+    initSectors(j ,sectors[1],matrix,11, 12, 19, 20);
+    initSectors(j ,sectors[2],matrix,13, 14, 21, 22);
+    initSectors(j ,sectors[3],matrix,25, 26, 33, 34);
+    initSectors(j ,sectors[4],matrix,27, 28, 35, 36);
+    initSectors(j ,sectors[5],matrix,29, 30, 37, 38);
+    initSectors(j ,sectors[6],matrix,41, 42, 49, 50);
+    initSectors(j ,sectors[7],matrix,43, 44, 51, 52);
+    initSectors(j ,sectors[8],matrix,45, 46, 53, 54);
+    }
    
-  
-  
-size(1280,360);
- smooth();
-  cP5 = new ControlP5(this);
-    background(0);
-
+// ad some controllers
   cP5.addButton("read",0,100,100,80,19);
   cP5.addButton("write",0,100,120,80,19);
-    cP5.addButton("newgame",0,100,140,80,19);
-
-textLabel = cP5.addTextlabel("label",labelStrings[5],100,70);
+  cP5.addButton("newgame",0,100,140,80,19);
+// the messages
+  textLabel = cP5.addTextlabel("label",labelStrings[5],100,70);
   textLabel.setColorValue(0xffcccccc);
-
+  
+  // now build some bangbuttons for selection off the lamp
+  // this will be on the arduino
+    int off1Y = 0;
+    int off1X = 0;
+     int off2Y = 0;
+    int off2X = 0;
+    
   for(int i=0;i< 9;i++) {
-    int offY = 0;
-    int offX = 0;
+    
     if(i > 2 && i < 6){
-    offY = 40;
-    offX = -150;
+    off1Y = 40;
+    off1X = -150;
+    off2Y = 40;
+    off2X = -150;
     }else if(i > 5){
-        offY = 80;
-       offX = -300;
+    off1Y = 80;
+    off1X = -300;
+    off2Y = 80;
+    off2X = -300;
     }
-    cP5.addBang("bang"+i,width/2 + i* 50 + offX, 100 +offY,20,20).setId(i);
+    
+    cP5.addBang("bang"+i,width/2 + i* 50 + off1X, 100 +off1Y,20,20).setId(i);
+    cP5.addBang("bang"+(i+9),(width/3)*2 + i* 50 + off2X, 100 +off2Y,20,20).setId(i+9);
+
   }
   
-    for(int j=0;j< 9;j++) {
-    int offY = 0;
-    int offX = 0;
-    if(j > 2 && j < 6){
-    offY = 40;
-    offX = -150;
-    }else if(j > 5){
-        offY = 80;
-       offX = -300;
-    }
-    cP5.addBang("bang"+(j+9),(width/3)*2 + j* 50 + offX, 100 +offY,20,20).setId(j+9);
-  }
+  // read from server
+  // the fallback local mode is not implemented
+  // needs something like creating a mail with the scores.txt attached
   
-  
-
-//sectors[2].setSectorVal(1);
-
 try{
   read();// this reads the scores from the server
   }catch(Exception e){
-
   textLabel.setValue(labelStrings[2]);
   }
 
@@ -205,10 +188,11 @@ void draw(){
   
 //  println(ply1Wins);
   background(0);
+  // push the lamps around
   pushMatrix();
   translate(width/4,height/4);
+  // you could also do that for the sectors
   for(int j = 0;  j< matrix.length;j++){
-//    matrix[j].val = 0;
     matrix[j].display();
   }
   
@@ -216,15 +200,17 @@ void draw(){
   //fill(buttonVal);
   //rect(20,20,width-40,height-40);
 
-
-if(player == 1){
+// tell whos turn it is
+if(whosTurn == 1){
 textLabel.setValue(labelStrings[0]);
-}else if (player ==2 ){
+}else if (whosTurn == 2 ){
 textLabel.setValue(labelStrings[1]);
 }
 
+// this checks all the sectors for winners
 checkSectors();
 
+//  the game is over
   if(gameover){
     matrix[gameoveranim].val = 3;
     delay(100);
@@ -233,8 +219,8 @@ checkSectors();
     gameoveranim = 0;
     if(theWinner ==1){
     ply1Wins++;
-    }else if(theWinner ==2){
-    ply1Wins++;
+    }else if(theWinner == 2){
+    ply2Wins++;
     }
     gameover = false;
     newgame();
@@ -253,14 +239,14 @@ public void controlEvent(ControlEvent theEvent) {
   println(theEvent.controller().name());
   
     if(theEvent.controller().id() > 8){
-          if(sectors[theEvent.controller().id()-9].secval == 0 && player == 2){
+          if(sectors[theEvent.controller().id()-9].secval == 0 && whosTurn == 2){
           sectors[theEvent.controller().id()-9].setSectorVal(2);
-          player = 1;
+          whosTurn = 1;
           }
     }else{
-          if(sectors[theEvent.controller().id()].secval == 0 && player == 1){
+          if(sectors[theEvent.controller().id()].secval == 0 && whosTurn == 1){
           sectors[theEvent.controller().id()].setSectorVal(1);
-          player = 2;
+          whosTurn = 2;
           }
     }
 }// close controll event
@@ -272,12 +258,16 @@ public void read() {
   
 
   
+  
    scores = loadStrings(scores_url);// this could also be a local file but here it is hidden on a server
+  
+  
   // scores = loadStrings("scores.txt"); 
-  player =  Integer.parseInt(scores[0]);
+  whosTurn =  Integer.parseInt(scores[0]);
   ply1Wins = Integer.parseInt(scores[1]);
   ply2Wins = Integer.parseInt(scores[2]);
-
+//  println("Games Won by Player 1" + ply1Wins +"\n"
+//  +"Games Won by Player 2" + ply2Wins +"\n");
 //println("there are " + lines.length + " lines");
 for (int i=0; i < scores.length; i++) {
   println(scores[i]);
@@ -293,7 +283,7 @@ for (int i=0; i < scores.length; i++) {
 // writes the values to the textfile
 public void write() {
   println("a button event from write");
-  scores [0] = player +"";
+  scores [0] = whosTurn +"";
   scores [1] = ply1Wins+"";
   scores [2] = ply2Wins+"";
   for(int i = 3; i < scores.length ; i++){
@@ -301,7 +291,7 @@ public void write() {
   
   }
   // write the results to the textfile
- //saveStrings(dataPath("scores.txt"), scores);
+ saveStrings(dataPath("scores.txt"), scores);
  
  // this is the postToWeb Lib by seltar
      ByteToWeb bytes = new ByteToWeb(this);
@@ -331,184 +321,64 @@ for(int j = 0; j < matrix.length; j++){
 }
 
 void checkSectors(){
-theWinner = 0;
-String ply1Won = labelStrings[3];
-String ply2Won = labelStrings[4];
 
-
+// there are 8 possibilitys how to win
+  
+// 1  2  3
+// 4  5  6
+// 7  8  9
+// 
+// 
+// read in all values from the 9 sectors
 int secVals [] = new int [sectors.length];
 for (int i = 0; i < secVals.length; i++){
 secVals[i] = sectors[i].secval;
 }
 
-
-
-
-// player 1 chances
-// sec 1, 2,3
-
-testPossibility(secVals,0,1,2,1,ply1Won);
-
-//if((secVals[0]  == 1)&&(secVals[1]  == 1)&&(secVals[2]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//gameover = true;
-//
-//}
+// this checkes for all possibilitys to win for both players 
+// each frame
+//for(int j = 1; j < 3; j ++){
+  // 1, 2,3
+testPossibility(secVals,0,1,2, 1,labelStrings[1+2]);
 // 456
-
-testPossibility(secVals,3,4,5,1,ply1Won);
-
-//if((secVals[3]  == 1)&&(secVals[4]  == 1)&&(secVals[5]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//
-//gameover = true;
-//}
+testPossibility(secVals,3,4,5,1,labelStrings[1+2]);
 // 789
-
-testPossibility(secVals,6,7,8,1,ply1Won);
-
-
-//if((secVals[6]  == 1)&&(secVals[7]  == 1)&&(secVals[8]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//gameover = true;
-//}
-
-
+testPossibility(secVals,6,7,8,1,labelStrings[1+2]);
 //147
-testPossibility(secVals,0,3,6,1,ply1Won);
-
-//if((secVals[0]  == 1)&&(secVals[3]  == 1)&&(secVals[6]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//
-//gameover = true;
-//}
-
-
+testPossibility(secVals,0,3,6,1,labelStrings[1+2]);
 //258
-testPossibility(secVals,1,4,7,1,ply1Won);
-//if((secVals[1]  == 1)&&(secVals[4]  == 1)&&(secVals[7]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//gameover = true;
-//}
-
-
+testPossibility(secVals,1,4,7,1,labelStrings[1+2]);
 //369
-testPossibility(secVals,2,5,8,1,ply1Won);
-
-//if((secVals[2]  == 1)&&(secVals[5]  == 1)&&(secVals[8]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//gameover = true;
-//}
-
+testPossibility(secVals,2,5,8,1,labelStrings[1+2]);
 //159
-testPossibility(secVals,0,4,8,1,ply1Won);
-
-//if((secVals[0]  == 1)&&(secVals[4]  == 1)&&(secVals[8]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//gameover = true;
-//}
-
-
+testPossibility(secVals,0,4,8,1,labelStrings[1+2]);
 //753
+testPossibility(secVals,6,4,2,1,labelStrings[1+2]);
 
-testPossibility(secVals,6,4,2,1,ply1Won);
-
-//if((secVals[6]  == 1)&&(secVals[4]  == 1)&&(secVals[2]  == 1)){
-//textLabel.setValue(ply1Won);
-//theWinner = 1;
-//gameover = true;
-//}
-
-
-// player 1 different ways a player can win
-// it could be
-// 123
+//player 2
+//123
+testPossibility(secVals,0,1,2, 2,labelStrings[2+2]);
 // 456
+testPossibility(secVals,3,4,5,2,labelStrings[2+2]);
 // 789
-// 147
-// 258
-// 369
-// 159
-// 753
-
-
-// sec 1, 2,3
-if((secVals[0]  == 2)&&(secVals[1]  == 2)&&(secVals[2]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-
-gameover = true;
-
-
-}
-// 456
-if((secVals[3]  == 2)&&(secVals[4]  == 2)&&(secVals[5]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-
-gameover = true;
-
-}
-// 789
-if((secVals[6]  == 2)&&(secVals[7]  == 2)&&(secVals[8]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-
-gameover = true;
-
-}
+testPossibility(secVals,6,7,8,2,labelStrings[2+2]);
 //147
-if((secVals[0]  == 2)&&(secVals[3]  == 2)&&(secVals[6]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-
-gameover = true;
-
-}
+testPossibility(secVals,0,3,6,2,labelStrings[2+2]);
 //258
-if((secVals[1]  == 2)&&(secVals[4]  == 2)&&(secVals[7]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-
-gameover = true;
-
-}
+testPossibility(secVals,1,4,7,2,labelStrings[2+2]);
 //369
-if((secVals[2]  == 2)&&(secVals[5]  == 2)&&(secVals[8]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-
-gameover = true;
-
-}
+testPossibility(secVals,2,5,8,2,labelStrings[2+2]);
 //159
-if((secVals[0]  == 2)&&(secVals[4]  == 2)&&(secVals[8]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-
-gameover = true;
-
-}
+testPossibility(secVals,0,4,8,2,labelStrings[2+2]);
 //753
-if((secVals[6]  == 2)&&(secVals[4]  == 2)&&(secVals[2]  == 2)){
-textLabel.setValue(ply2Won);
-theWinner = 2;
-gameover = true;
-
-}  
+testPossibility(secVals,6,4,2,2,labelStrings[2+2]);
+//}
  
 }
 
 
+// this checkes for the possible wins
 void testPossibility(int secVals[], int a,int b, int c, int ply,String msg){
-
 if((secVals[a]  == ply)&&(secVals[b]  == ply)&&(secVals[c]  == ply)){
 textLabel.setValue(msg);
 theWinner = ply;
@@ -518,3 +388,11 @@ gameover = true;
 
 }
 
+
+// this combines 4 lamps into a sector
+void initSectors(int i ,Sector sector, Lamp matrix [],int a, int b, int c, int d){
+
+    if((i == a) || (i == b)||(i == c)||(i == d)){
+    sector.addLampToSector(matrix[i]);
+    }
+}
